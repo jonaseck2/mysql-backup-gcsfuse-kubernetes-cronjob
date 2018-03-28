@@ -1,0 +1,36 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mysql-backup-gcsfuse
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: mysql-backup-gcsfuse
+            image: jestar/mysql-backup-gcsfuse-kubernetes-cronjob
+            args:
+            - /bin/sh
+            - -c
+          restartPolicy: OnFailure
+          env:
+          - name: MYSQL_HOST
+            value: mysql-db
+          - name: MONGODB_DB
+            value: myDb
+          - name: STORAGE_BACKUP_BUCKET_NAME
+            value: mybucket
+          - name: BACKUP_PREFIX
+            value: test
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: "/credentials/google-application-credentials.json"
+          volumeMounts:
+          - name: google-application-credentials
+            mountPath: "/credentials"
+            readOnly: true
+        volumes:
+        - name: google-application-credentials
+          secret:
+            secretName: google-application-credentials
