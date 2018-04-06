@@ -1,33 +1,23 @@
 apiVersion: batch/v1beta1
-kind: Job
+kind: CronJob
 metadata:
-  generateName: "mysql-backup-"
+  name: mysql-backup-gcsfuse
 spec:
-  template:
-    backoffLimit: 0
+  schedule: "0 2 * * *"
+  jobTemplate:
     spec:
       template:
         spec:
-          restartPolicy: OnFailure
           containers:
-          - name: mysql-backup
+          - name: mysql-backup-gcsfuse
             image: jonaseck/mysql-backup-gcsfuse
-            resources:
-              requests:
-                memory: "256Mi"
-                cpu: "10m"
-            securityContext:
-              privileged: true
-              capabilities:
-                add:
-                  - SYS_ADMIN
             args:
             - /bin/sh
             - -c
             - >
               mkdir -p /backup &&
               gcsfuse $STORAGE_BACKUP_BUCKET_NAME /backup &&
-              mysqldump -p ${MYSQL_USER} -h ${MYSQL_HOST} -p ${MYSQL_PASSWORD} --databases ${MYSQL_DB} | bzip2 > /backup/${BACKUP_PREFIX}-$(date +\%Y.\%m.\%d.\%H\%M\%S).sql.bz2
+              mysqldump -p ${MYSQL_USER} -h ${MYSQL_HOST} -p ${MYSQL_PASSWORD} --all-databases | bzip2 > /backup/${BACKUP_PREFIX}-$(date +\%Y.\%m.\%d.\%H\%M\%S).sql.gz
             lifecycle:
               preStop:
                 exec:
@@ -35,13 +25,11 @@ spec:
             restartPolicy: OnFailure
             env:
             - name: MYSQL_USER
-              value: root
+              value: mysql-db
             - name: MYSQL_PASSWORD
-              value: supersecret
+              value: mysql-db
             - name: MYSQL_HOST
-              value: mysql-host
-            - name: MYSQL_DB
-              value: mysql-host
+              value: mysql-db
             - name: STORAGE_BACKUP_BUCKET_NAME
               value: mybucket
             - name: BACKUP_PREFIX

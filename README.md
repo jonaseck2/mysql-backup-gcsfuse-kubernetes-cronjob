@@ -1,6 +1,6 @@
-# mongodb-backup
+# mysql-backup-gcsfuse
 
-This image runs mongodump to backup data using cronjob to folder `/backup` mounted from a google store bucket using gcsfuse
+This image runs mysqldump to backup data using cronjob to folder `/backup` mounted from a google store bucket using gcsfuse
 
 Heavily influenced by [tutumcloud/mongodb-backup](github.com/tutumcloud/mongodb-backup) and [Requilence/mongodb-backup](github.com/Requilence/mongodb-backup)
 
