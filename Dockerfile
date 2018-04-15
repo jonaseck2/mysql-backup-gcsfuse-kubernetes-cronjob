@@ -1,8 +1,10 @@
-FROM golang:alpine3.7
-RUN apk add --no-cache git
-ENV GOPATH /go
-RUN go get -u github.com/googlecloudplatform/gcsfuse
+FROM debian:jessie-slim
 
-FROM alpine:3.7
-RUN apk add --no-cache ca-certificates fuse mysql-client && rm -rf /tmp/*
-COPY --from=0 /go/bin/gcsfuse /usr/local/bin
+RUN export GCSFUSE_REPO=gcsfuse-jessie \
+&& apt-get -qy update \
+&& apt-get -qy install curl \
+&& echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" | tee /etc/apt/sources.list.d/gcsfuse.list \
+&& curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+&& apt-get -qy update \
+&& apt-get -qy install gcsfuse mysql-client \
+&& rm -rf /var/lib/apt/lists/*
